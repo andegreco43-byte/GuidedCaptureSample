@@ -1,1 +1,29 @@
+name: Build GuidedCaptureSample IPA
+on:
+  workflow_dispatch
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
+      - name: Build Unsigned iOS Application
+        run: |
+          xcodebuild clean build \
+            -project GuidedCaptureSample.xcodeproj \
+            -scheme GuidedCaptureSample \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            SYMROOT=$(PWD)/build
+
+          mkdir Payload
+          mv build/Debug-iphoneos/GuidedCaptureSample.app Payload/
+          zip -r GuidedCaptureSample.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GuidedCaptureSample-App
+          path: GuidedCaptureSample.ipa
